@@ -34,6 +34,8 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").default("student").notNull(), // student or admin
   leaveBalance: integer("leave_balance").default(20).notNull(),
+  rollNumber: varchar("roll_number"), // Student roll number
+  branch: varchar("branch"), // Student branch/department
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

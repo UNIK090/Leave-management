@@ -25,6 +25,8 @@ export interface IStorage {
   // User operations (mandatory for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  updateUserProfile(id: string, data: { rollNumber?: string; branch?: string; }): Promise<User>;
+  updateUserRole(id: string, role: string): Promise<User>;
   
   // Leave request operations
   getLeaveById(id: number): Promise<LeaveRequest | undefined>;

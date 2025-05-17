@@ -32,6 +32,7 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
     return location === path;
   };
 
+  // Create different navigation items based on user role
   const navItems = [
     {
       label: "Main",
@@ -46,11 +47,14 @@ export default function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           href: "/my-leaves",
           icon: <CalendarDays className="h-5 w-5" />,
         },
-        {
-          name: "New Request",
-          href: "/new-request",
-          icon: <PlusCircle className="h-5 w-5" />,
-        },
+        // Only show New Request option for students
+        ...(user.role !== "admin" ? [
+          {
+            name: "New Request",
+            href: "/new-request",
+            icon: <PlusCircle className="h-5 w-5" />,
+          }
+        ] : []),
       ],
     },
   ];

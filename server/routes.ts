@@ -38,7 +38,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const userData = req.body;
       
-      const user = await storage.updateUserProfile(userId, userData);
+      // Filter allowed fields to update
+      const allowedUpdates = {
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        rollNumber: userData.rollNumber,
+        branch: userData.branch,
+      };
+      
+      const user = await storage.updateUserProfile(userId, allowedUpdates);
       res.json(user);
     } catch (error) {
       console.error("Error updating user profile:", error);

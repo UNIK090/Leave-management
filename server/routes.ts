@@ -31,6 +31,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
+  
+  // Update user profile route
+  app.patch('/api/users/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const userData = req.body;
+      
+      const user = await storage.updateUserProfile(userId, userData);
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ message: "Failed to update user profile" });
+    }
+  });
+  
+  // Set user as admin (self-service for demo)
+  app.patch('/api/users/:userId/role', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.claims.sub;
+      const { userId } = req.params;
+      const { role } = req.body;
+      
+      // Only allow users to update their own role (for demo purposes)
+      if (userId !== currentUserId) {
+        const currentUser = await storage.getUser(currentUserId);
+        // Only admins can update other users' roles
+        if (currentUser?.role !== 'admin') {
+          return res.status(403).json({ message: "Permission denied" });
+        }
+      }
+      
+      if (role !== 'admin' && role !== 'student') {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+      
+      const user = await storage.updateUserRole(userId, role);
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ message: "Failed to update user role" });
+    }
+  });
 
   // Leave requests routes
   app.get("/api/leaves", isAuthenticated, async (req: any, res) => {

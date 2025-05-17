@@ -10,6 +10,7 @@ const NewRequest = lazy(() => import("@/pages/NewRequest"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const LeaveDetails = lazy(() => import("@/pages/LeaveDetails"));
 const Landing = lazy(() => import("@/pages/Landing"));
+const Profile = lazy(() => import("@/pages/Profile"));
 
 function LoadingFallback() {
   return (
@@ -39,6 +40,7 @@ function Router() {
             <Route path="/my-leaves" component={MyLeaves} />
             <Route path="/new-request" component={NewRequest} />
             <Route path="/leave/:id" component={LeaveDetails} />
+            <Route path="/profile" component={Profile} />
             {user.role === "admin" && (
               <Route path="/admin" component={AdminDashboard} />
             )}

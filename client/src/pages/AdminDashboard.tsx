@@ -193,6 +193,7 @@ export default function AdminDashboard() {
                       <TableHeader className="bg-neutral-50">
                         <TableRow>
                           <TableHead>Student</TableHead>
+                          <TableHead>Student Details</TableHead>
                           <TableHead>Leave Type</TableHead>
                           <TableHead>Date Range</TableHead>
                           <TableHead>Duration</TableHead>
@@ -204,7 +205,17 @@ export default function AdminDashboard() {
                         {filteredLeaves.map((leave) => (
                           <TableRow key={leave.id}>
                             <TableCell className="font-medium">
-                              {leave.user.firstName} {leave.user.lastName}
+                              {leave.user?.firstName} {leave.user?.lastName}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="text-xs text-muted-foreground">
+                                  {leave.user?.rollNumber ? `Roll #: ${leave.user.rollNumber}` : 'No Roll Number'}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {leave.user?.branch ? `Branch: ${leave.user.branch}` : 'No Branch Info'}
+                                </span>
+                              </div>
                             </TableCell>
                             <TableCell className="capitalize">
                               {leave.type} Leave

@@ -201,6 +201,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to cancel leave request" });
     }
   });
+  
+  // Submit leave request to admin for review
+  app.post("/api/leaves/:id/submit", isAuthenticated, async (req: any, res) => {
+    try {
+      const leaveId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      
+      const leave = await storage.getLeaveById(leaveId);
+      if (!leave) {
+        return res.status(404).json({ message: "Leave request not found" });
+      }
+
+      if (leave.userId !== userId) {
+        return res.status(403).json({ message: "Unauthorized to submit this leave request" });
+      }
+
+      if (leave.status !== "pending") {
+        return res.status(400).json({ message: "Only pending leave requests can be submitted for review" });
+      }
+      
+      // Get user details for the notification
+      const user = await storage.getUser(userId);
+      
+      // Create notification for admins about the submitted leave request
+      const notification = await storage.createNotification({
+        userId: null, // For admin notifications
+        title: "Leave Request Submitted",
+        message: `${user?.firstName} ${user?.lastName} has submitted a ${leave.type} leave request for review`,
+        type: "alert",
+        read: false,
+        forAdmin: true,
+        relatedId: leaveId
+      });
+      
+      // Send real-time notification to admins
+      sseManager.sendToAdmins({
+        title: notification.title,
+        message: notification.message,
+        type: notification.type,
+        id: notification.id,
+        createdAt: notification.createdAt
+      });
+      
+      // We're just sending the notification without changing the status,
+      // as the request is already in 'pending' status
+
+      res.json({ success: true, message: "Leave request submitted to admin for review" });
+    } catch (error) {
+      console.error("Error submitting leave request to admin:", error);
+      res.status(500).json({ message: "Failed to submit leave request" });
+    }
+  });
 
   app.post("/api/leaves/:id/comments", isAuthenticated, async (req: any, res) => {
     try {

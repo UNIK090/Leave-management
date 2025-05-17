@@ -9,6 +9,8 @@ export interface User {
   profileImageUrl?: string;
   role: string;
   leaveBalance?: number;
+  rollNumber?: string;
+  branch?: string;
   createdAt: string;
   updatedAt: string;
 }

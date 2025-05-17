@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { LeaveRequest } from "@shared/types";
@@ -13,16 +13,56 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Eye } from "lucide-react";
+import { Eye, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import { format, parseISO } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+
+// SendToAdminButton Component
+function SendToAdminButton({ leaveId }: { leaveId: number }) {
+  const { toast } = useToast();
+  
+  const sendToAdminMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", `/api/leaves/${leaveId}/submit`, {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Request Submitted",
+        description: "Your leave request has been submitted to the administrator for review.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/leaves"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Submission Failed",
+        description: `Failed to submit leave request: ${error}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  return (
+    <Button 
+      variant="outline" 
+      size="sm" 
+      className="text-primary"
+      onClick={() => sendToAdminMutation.mutate()}
+      disabled={sendToAdminMutation.isPending}
+    >
+      <Send className="h-4 w-4 mr-2" />
+      {sendToAdminMutation.isPending ? "Sending..." : "Send to Admin"}
+    </Button>
+  );
+}
 
 export default function MyLeaves() {
   const { user } = useAuth();
@@ -166,12 +206,17 @@ export default function MyLeaves() {
                             </TableCell>
                             <TableCell>{renderStatusBadge(leave.status)}</TableCell>
                             <TableCell className="text-right">
-                              <Link href={`/leave/${leave.id}`}>
-                                <Button variant="ghost" size="sm">
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  View
-                                </Button>
-                              </Link>
+                              <div className="flex justify-end gap-2">
+                                <Link href={`/leave/${leave.id}`}>
+                                  <Button variant="ghost" size="sm">
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    View
+                                  </Button>
+                                </Link>
+                                {leave.status === "pending" && (
+                                  <SendToAdminButton leaveId={leave.id} />
+                                )}
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
